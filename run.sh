@@ -5,6 +5,11 @@ hack/dind-cluster.sh start
 
 source /root/go/src/github.com/openshift/origin/dind-openshift.rc
 
+# Install router on master node
+oc adm manage-node openshift-master-node --schedulable
+oc adm policy add-scc-to-user hostnetwork -z router
+oc adm router --selector=kubernetes.io/hostname=openshift-master-node
+
 # Install OLM
 cd ~/operator-lifecycle-manager
 oc adm policy add-cluster-role-to-user cluster-admin system

@@ -1,0 +1,13 @@
+diff --git a/images/dind/master/openshift-generate-master-config.sh b/images/dind/master/openshift-generate-master-config.sh
+index 4f668c4a08..9f3142ad11 100755
+--- a/images/dind/master/openshift-generate-master-config.sh
++++ b/images/dind/master/openshift-generate-master-config.sh
+@@ -59,6 +59,8 @@ function ensure-master-config() {
+    mv "${config_file}" "${config_file}.bak"
+    oc patch --config="${master_path}/admin.kubeconfig" --local --type=json -o yaml -f "${config_file}.bak" --patch='[{"op": "add", "path": "/controllerConfig/controllers/0", "value": "-openshift.io/sdn"}]' > "${config_file}"
+ 
++   sed -i "s/router\.default\.svc\.cluster\.local/router.${ip_addrs}.nip.io/" ${master_path}/master-config.yaml
++
+    cat > "${sdn_config_file}" <<EOF
+ kind: OpenShiftControllerManagerConfig
+ apiVersion: openshiftcontrolplane.config.openshift.io/v1

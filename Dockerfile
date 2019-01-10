@@ -23,7 +23,13 @@ export OS_OUTPUT_GOPATH=1         \n\
 export ORIGIN_BIN=$GOPATH/src/github.com/openshift/origin/_output/local/bin/linux/amd64/ \n\
 PATH=$ORIGIN_BIN:$PATH' >> /root/.bash_profile
 
-RUN mkdir -p $GOPATH/src/github.com/openshift && cd $GOPATH/src/github.com/openshift && git clone https://github.com/openshift/origin && cd origin && make all && rm -Rf pkg && rm -Rf vendor && rm -Rf _output/local/bin/linux/amd64/openshift-tests && rm -Rf api && rm -Rf docs && rm -Rf examples
+COPY patches/ /patches/
+
+RUN mkdir -p $GOPATH/src/github.com/openshift && cd $GOPATH/src/github.com/openshift && git clone https://github.com/openshift/origin && cd origin && \
+    /patches/apply.sh && \
+    make all && \
+    rm -Rf pkg/ vendor/ _output/local/bin/linux/amd64/openshift-tests /api/ docs/ examples/ && \
+    git config pack.windowMemory 512m && git gc --prune=now --aggressive
 
 COPY --from=console /console /console
 
