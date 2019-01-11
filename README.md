@@ -10,4 +10,6 @@ To launch:
 docker run -it -p 9000:9000 -v /tmp/:/tmp/ -v /var/run/docker.sock:/var/run/docker.sock gustavonalle/oc-cluster-up
 ```
 
+Make sure SELinux is not enabled.
+
 | DISCLAIMER: the container is based on alpha software and should be used for development and test purposes only. 
