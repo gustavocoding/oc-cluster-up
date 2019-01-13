@@ -1,7 +1,7 @@
 # oc-cluster-up
 
 
-Docker container to launch a docker-in-docker [OKD](https://okd.io) cluster. For Linux hosts, it works without virtualization so it's extremelly fast and lightweight. 
+Docker container to launch a multi-node, docker-in-docker [OKD](https://okd.io) cluster. For Linux hosts, it works without virtualization so it's extremelly fast and lightweight. 
 
 
 :rotating_light::rotating_light: This repo uses alpha software and should only be used for development and test purposes. :rotating_light::rotating_light:
@@ -69,3 +69,10 @@ okd expose svc/app
 ```
 
 Go to http://app-default.router.172.17.0.3.nip.io/ for a welcome message from Openshift!
+
+
+### TODO
+
+* Internal Docker Registry
+* Prometheus
+* S2i support
