@@ -25,9 +25,11 @@ PATH=$ORIGIN_BIN:$PATH' >> /root/.bash_profile
 
 COPY patches/ /patches/
 
+COPY compile.sh /root/
+
 RUN mkdir -p $GOPATH/src/github.com/openshift && cd $GOPATH/src/github.com/openshift && git clone https://github.com/openshift/origin && cd origin && \
     /patches/apply.sh && \
-    make all && \
+    /root/compile.sh && \
     rm -Rf pkg/ vendor/ _output/local/bin/linux/amd64/openshift-tests /api/ docs/ examples/ && \
     git config pack.windowMemory 512m && git gc --prune=now --aggressive
 
