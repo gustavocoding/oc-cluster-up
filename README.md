@@ -8,13 +8,13 @@ Docker container to launch a multi-node, docker-in-docker [OKD](https://okd.io) 
 
 Code is taken from ```master``` branch of [origin](github.com/openshift/origin), plus the [console](github.com/openshift/console) and the [operatore-lifecycle-manager](https://github.com/operator-framework/operator-lifecycle-manager).
 
-To launch (Linux), make sure SELinux is disabled and run:
+To launch in the foreground on Linux, make sure SELinux is disabled and run:
 
 ```
 docker run -it -p 9000:9000 -v /tmp/:/tmp/ -v /var/run/docker.sock:/var/run/docker.sock gustavonalle/oc-cluster-up
 ```
 
-You should see one master, two nodes, and the main container:
+Open another terminal, and you should see one master, two nodes, and the main container:
 
 ```
 $ docker ps
@@ -25,6 +25,8 @@ d74781e6a89b        openshift/dind-node           20 minutes ago     openshift-n
 e1c4886f6162        gustavonalle/oc-cluster-up    23 minutes ago     cranky_clarke
 
 ```
+
+Alternativelly, type ```Ctrl+p``` then ```Ctrl+q``` to reuse the same terminal.
 
 ### Demo
 
