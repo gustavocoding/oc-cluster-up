@@ -53,6 +53,14 @@ and to start:
 docker start openshift-master openshift-node-1 openshift-node-2
 ```
 
+### Cleanup
+
+To destroy all containers and files created, while preserving the images, use this script:
+
+```
+docker kill $(docker ps -q) && docker system prune -f && sudo rm -Rf /tmp/openshift*
+```
+
 ### Sample application
 
 In case ```oc``` is not installed locally, it's possible to reuse it from the master:
