@@ -11,7 +11,7 @@ Code is taken from ```master``` branch of [origin](github.com/openshift/origin),
 To launch in the foreground on Linux, make sure SELinux is disabled and run:
 
 ```
-docker run -it -p 9000:9000 -v /tmp/:/tmp/ -v /var/run/docker.sock:/var/run/docker.sock gustavonalle/oc-cluster-up
+docker run -it -p 9000:9000 -v /tmp/:/tmp/ -v /etc/docker/certs.d/:/certs/ -v /var/run/docker.sock:/var/run/docker.sock gustavonalle/oc-cluster-up
 ```
 
 Open another terminal, and you should see one master, two nodes, and the main container:

@@ -42,7 +42,7 @@ RUN git clone https://github.com/openshift/origin
 WORKDIR $GOPATH/src/github.com/openshift/origin
 RUN /patches/apply.sh
 RUN make all 
-RUN rsync -r --exclude '.git' --exclude 'pkg/' --exclude 'vendor/' --exclude 'api/' --exclude 'docs/' --exclude 'examples/' /root/go/src/github.com/openshift/origin/ /origin 
+RUN rsync -r --exclude '.git' --exclude '_output/local/bin/linux/amd64/openshift-tests' --exclude 'pkg/' --exclude 'vendor/' --exclude 'api/' --exclude 'docs/' --exclude 'examples/' /root/go/src/github.com/openshift/origin/ /origin 
 
 # Main stage
 
@@ -61,6 +61,8 @@ COPY --from=builder /origin /origin
 COPY registry/ docker-operator/
 
 COPY run.sh /origin 
+
+COPY registry.crt /
 
 EXPOSE 9000
 
