@@ -1,3 +1,5 @@
+# Console stage
+
 FROM quay.io/coreos/tectonic-console-builder:v16 as console
 
 RUN mkdir -p /go/src/github.com/openshift/ && cd /go/src/github.com/openshift/ && git clone https://github.com/openshift/console && cd console && ./build.sh 
@@ -7,11 +9,17 @@ RUN cp -r /go/src/github.com/openshift/console/contrib /console/contrib
 RUN cp -r /go/src/github.com/openshift/console/examples /console/examples
 RUN cp /go/src/github.com/openshift/console/bin/bridge /console/bridge
 
-FROM fedora:29
+# Base Os stage
 
-MAINTAINER gustavonalle@gmail.com
+FROM fedora:29 as base-os 
 
-RUN dnf -y install golang git findutils which sudo krb5-devel jq docker && dnf clean all
+RUN dnf -y install docker findutils golang jq && dnf clean all
+
+# Builder stage 
+
+FROM base-os as builder
+
+RUN dnf -y install git which sudo krb5-devel jq rsync && dnf clean all
 
 ENV HOME=/root/
 ENV GOPATH=$HOME/go
@@ -25,22 +33,37 @@ PATH=$ORIGIN_BIN:$PATH' >> /root/.bash_profile
 
 COPY patches/ /patches/
 
-COPY compile.sh /root/
+RUN git clone https://github.com/operator-framework/operator-lifecycle-manager /operator-lifecycle-manager
 
-RUN mkdir -p $GOPATH/src/github.com/openshift && cd $GOPATH/src/github.com/openshift && git clone https://github.com/openshift/origin && cd origin && \
-    /patches/apply.sh && \
-    /root/compile.sh && \
-    rm -Rf pkg/ vendor/ _output/local/bin/linux/amd64/openshift-tests /api/ docs/ examples/ && \
-    git config pack.windowMemory 512m && git gc --prune=now --aggressive
+RUN mkdir -p $GOPATH/src/github.com/openshift && cd $GOPATH/src/github.com/openshift && git clone https://github.com/openshift/cluster-image-registry-operator.git && cp -r $GOPATH/src/github.com/openshift/cluster-image-registry-operator/deploy /docker-operator/ && rm -Rf $GOPATH/src/github.com/openshift/cluster-image-registry-operator 
+
+WORKDIR $GOPATH/src/github.com/openshift
+RUN git clone https://github.com/openshift/origin 
+WORKDIR $GOPATH/src/github.com/openshift/origin
+RUN /patches/apply.sh
+RUN make all 
+RUN rsync -r --exclude '.git' --exclude 'pkg/' --exclude 'vendor/' --exclude 'api/' --exclude 'docs/' --exclude 'examples/' /root/go/src/github.com/openshift/origin/ /origin 
+
+# Main stage
+
+FROM base-os 
+
+MAINTAINER gustavonalle@gmail.com
 
 COPY --from=console /console /console
 
-RUN git clone https://github.com/operator-framework/operator-lifecycle-manager ~/operator-lifecycle-manager
+COPY --from=builder /docker-operator /docker-operator
 
-COPY run.sh $GOPATH/src/github.com/openshift/origin 
+COPY --from=builder /operator-lifecycle-manager  /operator-lifecycle-manager
+
+COPY --from=builder /origin /origin
+
+COPY registry/ docker-operator/
+
+COPY run.sh /origin 
 
 EXPOSE 9000
 
-WORKDIR $GOPATH/src/github.com/openshift/origin/
+WORKDIR /origin/
 
-ENTRYPOINT $GOPATH/src/github.com/openshift/origin/run.sh 
+ENTRYPOINT /origin/run.sh 

@@ -1,9 +1,13 @@
 #!/bin/bash
 
+# Pull dependend images
+docker pull gustavonalle/openshift-dind-node
+docker pull gustavonalle/openshift-dind-master
+
 # Start the cluster
 hack/dind-cluster.sh start
 
-source /root/go/src/github.com/openshift/origin/dind-openshift.rc
+source /origin/dind-openshift.rc
 
 # Install router on master node
 oc adm manage-node openshift-master-node --schedulable
@@ -11,7 +15,7 @@ oc adm policy add-scc-to-user hostnetwork -z router
 oc adm router --selector=kubernetes.io/hostname=openshift-master-node
 
 # Install OLM
-cd ~/operator-lifecycle-manager
+cd /operator-lifecycle-manager
 oc adm policy add-cluster-role-to-user cluster-admin system
 for filename in deploy/okd/manifests/latest/*.yaml
 do
@@ -19,6 +23,15 @@ do
      oc create -f $filename
      sleep 1
 done
+
+# Install Registry Operator
+/docker-operator/prepare.sh
+for filename in /docker-operator/*.yaml
+do
+   oc create -f $filename
+   sleep 1
+done
+oc apply -f /docker-operator/route.yaml
 
 # Configure OAUTH and lauch the console
 cd /console

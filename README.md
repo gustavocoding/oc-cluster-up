@@ -37,10 +37,36 @@ Alternativelly, type ```Ctrl+p``` then ```Ctrl+q``` to reuse the same terminal.
 
 [MacOS hosts](README-macos.md) need docker-machine to work.
 
-
 ### Console
 
 Console will be reachable on https://localhost:9090
+
+### Registry
+
+The registry can be accessed from outside OKD at https://registry.router.172.17.0.3.nip.io. Example:
+
+```
+# Pull an existing public image
+docker pull jboss/infinispan-server
+
+# Tag it to use in the 'myproject' namespace
+docker tag jboss/infinispan-server registry.router.172.17.0.3.nip.io/myproject/infinispan
+
+# Login as developer
+oc login -u developer -p developer
+
+# Create project
+oc new-project myproject
+
+# Login to the registry
+docker login -u $(oc whoami) -p $(oc whoami -t) https://registry.router.172.17.0.3.nip.io/
+
+# Push the image
+docker push registry.router.172.17.0.3.nip.io/myproject/infinispan
+
+# Create a new app using the internal image
+oc new-app myproject/infinispan
+```
 
 ### Pausing and resuming
 
