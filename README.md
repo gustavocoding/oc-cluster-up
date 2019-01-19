@@ -109,6 +109,5 @@ Go to http://app-default.router.172.17.0.3.nip.io/ for a welcome message from Op
 
 ### TODO
 
-* Internal Docker Registry
 * Prometheus
 * S2i support
