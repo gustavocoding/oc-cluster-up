@@ -6,6 +6,7 @@ set -e
 docker pull gustavonalle/openshift-dind-node
 docker pull gustavonalle/openshift-dind-master
 
+
 # Add nip.io self signed certificate for docker
 mkdir -p /certs/registry.router.172.17.0.3.nip.io/
 cp -f /registry.crt /certs/registry.router.172.17.0.3.nip.io/

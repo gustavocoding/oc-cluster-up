@@ -1,4 +1,3 @@
-set -x
 DIR=/etc/docker/certs.d/image-registry.openshift-image-registry.svc:5000/
 
 function prepare() {

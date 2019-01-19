@@ -1,0 +1,25 @@
+diff --git a/hack/dind-cluster.sh b/hack/dind-cluster.sh
+index 71381efb5c..87f62eb820 100755
+--- a/hack/dind-cluster.sh
++++ b/hack/dind-cluster.sh
+@@ -413,8 +413,10 @@ function start-container() {
+ 
+   local volumes run_cmd
+   volumes=""
+-
++  DNS=$(cat /etc/resolv.conf | grep nameserver | head -1 | cut -d ' ' -f 2)
+   ${DOCKER_CMD} run -dt ${volumes} -v "${config_root}:${deployed_config_root}" --privileged \
++	        --dns-opt timeout:1 --dns-opt ndots:5 --dns 172.30.0.1 --dns "${DNS}" --dns-search default.svc.cluster.local --dns-search svc.cluster.local --dns-search cluster.local \
++		-v /sys/fs/cgroup:/sys/fs/cgroup:rw \
+                 --name="${name}" --hostname="${name}" "${image}" > /dev/null
+ }
+ 
+@@ -515,7 +517,7 @@ function pause() {
+   check-containers "pause"
+ 
+   for cid in $( ${DOCKER_CMD} ps -qa --filter "name=${MASTER_NAME}|${NODE_PREFIX}" ); do
+-    ${DOCKER_CMD} stop "${cid}" > /dev/null &
++    ${DOCKER_CMD} stop -t 120 "${cid}" > /dev/null &
+   done
+ 
+   wait
