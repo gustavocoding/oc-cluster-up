@@ -14,7 +14,7 @@ To launch in the foreground on Linux, make sure SELinux is disabled and run:
 docker run -it -p 9000:9000 -v /tmp/:/tmp/ -v /etc/docker/certs.d/:/certs/ -v /var/run/docker.sock:/var/run/docker.sock gustavonalle/oc-cluster-up
 ```
 
-Open another terminal, and you should see one master, two nodes, and the main container:
+Open another terminal, and you should see one master, one node, and the main container:
 
 ```
 $ docker ps
@@ -37,20 +37,35 @@ Alternativelly, type ```Ctrl+p``` then ```Ctrl+q``` to reuse the same terminal.
 
 [MacOS hosts](README-macos.md) need docker-machine to work.
 
+### Cluster size
+
+By default the cluster size is 2 (master + 1 node), but the size can be changed with the environment variable NODES.
+
+
+E.g., to run a single node cluster (master only):
+
+```
+docker run -e "NODES=0" ...
+```
+
 ### Console
 
 Console will be reachable on https://localhost:9090
 
 ### Registry
 
-The registry can be accessed from outside OKD at https://registry.router.172.17.0.3.nip.io. Example:
+The registry can be accessed from outside OKD at the master container in the URL https://registry.router.MASTER_IP.nip.io.
+
+Example of usage:
 
 ```
+MASTER=$(oc describe nodes/openshift-master-node  | grep InternalIP | awk '{print $2}')
+
 # Pull an existing public image
 docker pull jboss/infinispan-server
 
 # Tag it to use in the 'myproject' namespace
-docker tag jboss/infinispan-server registry.router.172.17.0.3.nip.io/myproject/infinispan
+docker tag jboss/infinispan-server registry.router.$MASTER.nip.io/myproject/infinispan
 
 # Login as developer
 oc login -u developer -p developer
@@ -59,10 +74,10 @@ oc login -u developer -p developer
 oc new-project myproject
 
 # Login to the registry
-docker login -u $(oc whoami) -p $(oc whoami -t) https://registry.router.172.17.0.3.nip.io/
+docker login -u $(oc whoami) -p $(oc whoami -t) https://registry.router.$MASTER.nip.io/
 
 # Push the image
-docker push registry.router.172.17.0.3.nip.io/myproject/infinispan
+docker push registry.router.$MASTER.nip.io/myproject/infinispan
 
 # Create a new app using the internal image
 oc new-app myproject/infinispan
@@ -105,6 +120,8 @@ okd expose svc/app
 ```
 
 Go to http://app-default.router.172.17.0.3.nip.io/ for a welcome message from Openshift!
+
+Note: The master may not be 172.17.0.3 in your installation, to find out, run ```oc describe nodes/openshift-master-node  | grep InternalIP | awk '{print $2}'```
 
 
 ### TODO

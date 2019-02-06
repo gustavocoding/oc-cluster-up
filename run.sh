@@ -2,19 +2,24 @@
 
 set -e
 
+
+NODES=${NODES:=1}
+
 # Pull dependend images
 docker pull gustavonalle/openshift-dind-node
 docker pull gustavonalle/openshift-dind-master
 
-
-# Add nip.io self signed certificate for docker
-mkdir -p /certs/registry.router.172.17.0.3.nip.io/
-cp -f /registry.crt /certs/registry.router.172.17.0.3.nip.io/
-
 # Start the cluster
-hack/dind-cluster.sh start
+hack/dind-cluster.sh start -N $NODES
 
 source /origin/dind-openshift.rc
+
+MASTER=$(oc describe nodes/openshift-master-node  | grep InternalIP | awk '{print $2}')
+
+# Add nip.io self signed certificate for docker
+/docker-operator/gen-certs.sh
+mkdir -p /certs/registry.router.${MASTER}.nip.io/
+cp /docker-operator/registry.crt /certs/registry.router.${MASTER}.nip.io/
 
 # Install router on master node
 oc adm manage-node openshift-master-node --schedulable
@@ -28,7 +33,6 @@ for filename in deploy/okd/manifests/latest/*.yaml
 do
      echo "Processing $filename"
      oc create -f $filename
-     sleep 1
 done
 
 # Install Registry Operator
@@ -36,7 +40,6 @@ done
 for filename in /docker-operator/*.yaml
 do
    oc create -f $filename
-   sleep 1
 done
 oc apply -f /docker-operator/route.yaml
 
