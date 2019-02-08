@@ -128,3 +128,22 @@ Note: The master may not be 172.17.0.3 in your installation, to find out, run ``
 
 * Prometheus
 * S2i support
+
+
+### Common Errors
+
+#### Permission denied
+
+On Docker 1.13.1, the docker image might fail to start up showing permission errors like this (via `docker logs ...`):
+
+```bash
+go: creating work dir: mkdir /tmp/go-build717279851: permission denied
+go: creating work dir: mkdir /tmp/go-build462782577: permission denied
+mkdir: cannot create directory '/tmp/openshift': Permission denied
+```
+
+You can get around the problem by adding `--privileged` to the `docker run` call, e.g.
+
+```bash
+docker run --privileged --name oc-cluster-up ...
+```
